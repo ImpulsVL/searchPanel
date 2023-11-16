@@ -17,6 +17,7 @@
   </form>
 
   <?php
+  /* Подключение к БД */
   $conn = new mysqli("localhost", "root", "", "blog");
 
   if ($conn->connect_error) {
@@ -31,6 +32,7 @@
         exit();
     }
 
+    /* Запрос к БД для получения заголовка записи*/
     $sql = "SELECT posts.id, posts.title FROM posts JOIN comments ON posts.id = comments.postId WHERE comments.body LIKE '%{$input}%' GROUP BY posts.id, posts.title";
 
     $result = $conn->query($sql);
@@ -39,6 +41,7 @@
         while ($row = $result->fetch_assoc()) {
             echo "<h3>{$row['title']}</h3>";
 
+            /* Запрос к БД для получения комментария к нужной записи*/
             $commentSql = "SELECT comments.body FROM comments WHERE comments.postId = {$row['id']} AND comments.body LIKE '%{$input}%'";
             $commentResult = $conn->query($commentSql);
 
@@ -54,6 +57,7 @@
     }
 }
 
+  /*Хранит в себе массив JSON*/
   $jsonSources = [
     "https://jsonplaceholder.typicode.com/posts",
     "https://jsonplaceholder.typicode.com/comments",
@@ -62,6 +66,7 @@
   $postCount = 0;
   $commentCount = 0;
 
+  /*Получаем записи и преобразовываем файлы JSON*/
   foreach ($jsonSources as $url) {
     $json = file_get_contents($url);
     $data = json_decode($json, true);
@@ -79,6 +84,7 @@
         break;
     }
 
+    /*Выбираются только те записи, которые не существуют в БД*/
     foreach ($data as $item) {
       $columns = implode(", ", $fields);
       $values = "'" . implode("', '", $item) . "'";
@@ -93,6 +99,7 @@
       $selectSql .= implode(" AND ", $whereConditions);
       $result = $conn->query($selectSql);
 
+      /*Вносим записи в БД*/
       if ($result->num_rows == 0) {
         $sql = "INSERT INTO $table($columns) VALUES ($values)";
 
@@ -112,6 +119,7 @@
   $conn->close();
   ?>
 
+  <!-- Выводим количество записей в консоль -->
   <script>
     var postCount = <?php echo $postCount ?>;
     var commentCount = <?php echo $commentCount ?>;
