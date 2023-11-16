@@ -53,7 +53,7 @@
         echo "В записях не найдена строка \"{$input}\".";
     }
 }
- //просто
+
   $jsonSources = [
     "https://jsonplaceholder.typicode.com/posts",
     "https://jsonplaceholder.typicode.com/comments",
